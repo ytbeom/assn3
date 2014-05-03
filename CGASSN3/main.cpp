@@ -152,11 +152,19 @@ void display(void)
 		glLoadIdentity();	
 		glutPostRedisplay();
 
+		//translate Loop and draw 3D fireloop
+		glPushMatrix();
+		glTranslatef(translateLoop,0,0);
+		my_loop.display_3d_fireloop(my_lion.x, translateLoop);
+		glPopMatrix();
+
+		/*
 		//translate Loop
 		glPushMatrix();
 		glTranslatef(translateLoop,0,0);
 		my_loop.display_fireloop_front(BackgroundChange, my_lion.x, translateLoop);
 		glPopMatrix();
+		*/
 
 		//draw lion
 		//my_lion.drawLeg();
@@ -165,11 +173,13 @@ void display(void)
 		my_lion.drawLion();
 		glPopMatrix();
 
+		/*
 		//translate Loop
 		glPushMatrix();
 		glTranslatef(translateLoop,0,0);
 		my_loop.display_fireloop_back(BackgroundChange, my_lion.x, translateLoop);
 		glPopMatrix();
+		*/
 
 		//draw firepot
 		glPushMatrix();

@@ -23,6 +23,20 @@ void Fireloop::init(int _jumplength, float _mapsize, int stage){
 	mapsize = _mapsize;
 }
 
+void Fireloop::display_3d_fireloop(float lion_x, int translateLoop) {
+	for (int i=0; i < NumofLoop; i++) {
+		if(lion_x-100<LoopList[i]+translateLoop&&LoopList[i]+translateLoop<lion_x+1000) {
+			glColor3f(1.0, 0.0, 0.0);
+			glPushMatrix();
+			glTranslatef(LoopList[i],70,0);
+			glRotatef(90,0.0,1.0,0.0);
+			glutWireTorus(5, 25, 20, 20);
+			glPopMatrix();
+		}
+	}
+}
+
+/*
 void Fireloop::display_fireloop_front(int toggle,float lion_x,int translateLoop) {
 	// 고리의 앞부분을 그리는 부분, 사자보다 먼저 그려져야 함
 		//printf(" translate Loop : %d\n",translateLoop);
@@ -148,3 +162,4 @@ void Fireloop::display_fireloop_back(int toggle,float lion_x,int translateLoop) 
 	}
 	
 }
+*/
