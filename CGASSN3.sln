@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CGASSN3", "CGASSN3\CGASSN3.vcxproj", "{8067B9AE-E42F-4BA8-8904-D7A658C27096}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8067B9AE-E42F-4BA8-8904-D7A658C27096}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8067B9AE-E42F-4BA8-8904-D7A658C27096}.Debug|Win32.Build.0 = Debug|Win32
+		{8067B9AE-E42F-4BA8-8904-D7A658C27096}.Release|Win32.ActiveCfg = Release|Win32
+		{8067B9AE-E42F-4BA8-8904-D7A658C27096}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
