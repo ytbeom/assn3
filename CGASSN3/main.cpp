@@ -4,6 +4,7 @@
 #include "firepot.h"
 #include "fireloop.h"
 #include "stage.h"
+#include "ObjLoader.h"
 
 float mapsize;
 float bottom = 20.0;
@@ -17,6 +18,7 @@ Lion my_lion;
 Background my_bg;
 Firepot my_pot(jumplength);
 Fireloop my_loop(jumplength);
+Model_OBJ rockloader; // loader
 
 void init(void)
 {
@@ -28,6 +30,7 @@ void init(void)
 	my_lion.jump_state = 0;
 	translateLoop=0;
 	startfresh=0;
+
 	srand((unsigned int)time(NULL));
 	
 	// 1000에서 2000 사이의 mapsize 생성
@@ -36,6 +39,8 @@ void init(void)
 	my_bg.init(mapsize,bottom,stage);
 	my_pot.init(jumplength,mapsize,stage);
 	my_loop.init(jumplength,mapsize,stage);
+	// load model
+	rockloader.Load("tri_rock.obj");
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glShadeModel(GL_FLAT);
@@ -181,10 +186,24 @@ void display(void)
 		glPopMatrix();
 		*/
 
+		/*
 		//draw firepot
 		glPushMatrix();
 		glScalef(0.5f,0.5f,1.0f);
 		my_pot.display_firepot(BackgroundChange);
+		glPopMatrix();
+		*/
+
+		// draw rock
+		glPushMatrix();
+		glTranslatef(my_pot.PotList[0],0,0);
+		glScalef(10.0,10.0,10.0);
+		//rockloader.Draw();
+		glBegin(GL_POLYGON);
+		for (int i=0;i<3;i++) {
+			glVertex3f(rockloader.vertexBuffer[i*3+0],rockloader.vertexBuffer[i*3+1],0.0);
+		}
+		glEnd();
 		glPopMatrix();
 
 		glFlush();
