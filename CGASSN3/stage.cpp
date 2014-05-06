@@ -29,8 +29,8 @@ void Background::init(float _mapsize, float _bottom, int _season){
 void Background::draw(int BackgroundChange){
 	
 	//«œ¥√ πŸ≈¡?
-	glColor3f(0.529,0.807,0.980);
-	glRectf(-mapsize,10,mapsize+200,100);
+	//glColor3f(0.529,0.807,0.980);
+	//glRectf(-mapsize,10,mapsize+200,100);
 	
 
 		// ∞‘¿” »≠∏È πŸ¥⁄
