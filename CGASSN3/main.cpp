@@ -31,7 +31,7 @@ void init(void)
 	my_lion.jump_state = 0;
 	translateLoop=0;
 	startfresh=0;
-	viewmode = 4;
+	viewmode = 1;
 
 	srand((unsigned int)time(NULL));
 	

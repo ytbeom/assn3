@@ -6,7 +6,7 @@ Rock::Rock(int jumplength){
 
 void Rock::init(int _jumplength, float mapsize, int stage){
 	// 불항아리 개수/위치 설정 (게임 map 안에 있게끔)
-	rockmodel.Load("tri_rock.obj", "tri_rock.mtl");
+	rockmodel.Load("tri_rock.obj","tri_rock.mtl");
 	RockList.clear();
 	RockList.push_back((rand()%2+1)*_jumplength*2);
 	for (int i=0; i<(mapsize/_jumplength); i++) {
