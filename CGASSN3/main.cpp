@@ -18,7 +18,7 @@ Lion my_lion;
 Background my_bg;
 Firepot my_pot(jumplength);
 Fireloop my_loop(jumplength);
-Model_OBJ rockloader; // loader
+model rockloader; // loader
 
 void init(void)
 {
@@ -40,7 +40,7 @@ void init(void)
 	my_pot.init(jumplength,mapsize,stage);
 	my_loop.init(jumplength,mapsize,stage);
 	// load model
-	rockloader.Load("tri_rock.obj");
+	rockloader.Load("tri_rock.obj", "tri_rock.mtl");
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glShadeModel(GL_FLAT);
@@ -198,7 +198,7 @@ void display(void)
 		glPushMatrix();
 		glTranslatef(my_pot.PotList[0],bottom,0);
 		glScalef(10.0,10.0,10.0);
-		rockloader.Draw();
+		rockloader.draw();
 		glPopMatrix();
 
 		glFlush();
