@@ -87,6 +87,7 @@ void Stop(int value){
 void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
+	
 	if (BackgroundChange < 9) 
 		BackgroundChange++;
 	else
@@ -155,6 +156,7 @@ void display(void)
 		gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();	
+		//gluLookAt(0.0, 0.0, 100.0, my_lion.x, my_lion.y, 0.0, 0.0, 1.0, 0.0);
 		glutPostRedisplay();
 
 		//translate Loop and draw 3D fireloop
@@ -250,6 +252,7 @@ void Jump(int jump_direction){
 	gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();	
+	//gluLookAt(0.0, 0.0, 100.0, my_lion.x, my_lion.y, 0.0, 0.0, 1.0, 0.0);
 	glutPostRedisplay();
 
 	my_lion.y = bottom + 60 - 0.066*(print_x-30)*(print_x-30);
@@ -268,8 +271,8 @@ void Jump(int jump_direction){
 
 void specialkeyboard(int key, int x, int y)
 {
-	//glMatrixMode(GL_PROJECTION);
-	//glLoadIdentity();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
 	switch (key) {
 	case GLUT_KEY_UP:
 		if(my_lion.y==bottom&&startfresh==1) {
@@ -285,10 +288,11 @@ void specialkeyboard(int key, int x, int y)
 		}
 		break;
 	}
-	//gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();	
-	//glutPostRedisplay();
+	gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();	
+	//gluLookAt(0.0, 0.0, 100.0, my_lion.x, my_lion.y, 0.0, 0.0, 1.0, 0.0);
+	glutPostRedisplay();
 }
 
 void reshape(int w, int h)
@@ -298,6 +302,8 @@ void reshape(int w, int h)
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	//gluPerspective(60.0,2,10,1000);
+	//gluLookAt(0.0, 0.0, 100.0, my_lion.x, my_lion.y, 0.0, 0.0, 1.0, 0.0);
 	gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
