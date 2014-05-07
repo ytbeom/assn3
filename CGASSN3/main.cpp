@@ -196,7 +196,7 @@ void display(void)
 
 		// draw rock
 		glPushMatrix();
-		glTranslatef(my_pot.PotList[0],0,0);
+		glTranslatef(my_pot.PotList[0],bottom,0);
 		glScalef(10.0,10.0,10.0);
 		rockloader.Draw();
 		glPopMatrix();
