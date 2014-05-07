@@ -535,7 +535,7 @@ void model::draw()
 		{
 			//glBindTexture(GL_TEXTURE_2D, fcursor->mat->data.texture );
 			nCnt++;
-			glColor3f(1.0f, 1.0f, 1.0f);
+			glColor3f(150.0/255, 75.0/255, 0);
 
 			glTexCoord2f(fcursor->data.u[0], fcursor->data.v[0]);
 			glNormal3f(fcursor->data.a[0], fcursor->data.b[0], fcursor->data.c[0]);

@@ -4,7 +4,7 @@
 #include "firepot.h"
 #include "fireloop.h"
 #include "stage.h"
-#include "ObjLoader.h"
+#include "rock.h"
 
 float mapsize;
 float bottom = 20.0;
@@ -16,9 +16,9 @@ int stage=1;
 int startfresh;
 Lion my_lion;
 Background my_bg;
-Firepot my_pot(jumplength);
+//Firepot my_pot(jumplength);
+Rock my_rock(jumplength);
 Fireloop my_loop(jumplength);
-model rockloader; // loader
 int viewmode; // 1: 1st person view, 2: 3rd person view, 3: top view, 4: side view
 
 void init(void)
@@ -31,7 +31,7 @@ void init(void)
 	my_lion.jump_state = 0;
 	translateLoop=0;
 	startfresh=0;
-	viewmode = 1;
+	viewmode = 4;
 
 	srand((unsigned int)time(NULL));
 	
@@ -39,10 +39,9 @@ void init(void)
 	mapsize = rand()%1000+1000;
 //	mapsize = 200;
 	my_bg.init(mapsize,bottom,stage);
-	my_pot.init(jumplength,mapsize,stage);
+	//my_pot.init(jumplength,mapsize,stage);
+	my_rock.init(jumplength,mapsize,stage);
 	my_loop.init(jumplength,mapsize,stage);
-	// load model
-	rockloader.Load("tri_rock.obj", "tri_rock.mtl");
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glShadeModel(GL_FLAT);
@@ -154,7 +153,19 @@ void display(void)
 			}
 		}
 
-		glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+		switch(viewmode) {
+		case 1:
+			glOrtho(-50, 50+mapsize, -mapsize/4, -mapsize/4+50+mapsize/2, -50, 50);
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+			break;
+		}
+		
 //		glMatrixMode(GL_MODELVIEW);
 //		glLoadIdentity();	
 		glutPostRedisplay();
@@ -198,9 +209,7 @@ void display(void)
 
 		// draw rock
 		glPushMatrix();
-		glTranslatef(my_pot.PotList[0],bottom,0);
-		glScalef(10.0,10.0,10.0);
-		rockloader.draw();
+		my_rock.display_rock();
 		glPopMatrix();
 
 		glFlush();
