@@ -31,7 +31,7 @@ void init(void)
 	my_lion.jump_state = 0;
 	translateLoop=0;
 	startfresh=0;
-	viewmode = 1;
+	viewmode = 2;
 
 	srand((unsigned int)time(NULL));
 	
@@ -160,6 +160,8 @@ void display(void)
 		case 2:
 			break;
 		case 3:
+			glRotatef(90,1,0,0);
+			glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
 			break;
 		case 4:
 			glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
