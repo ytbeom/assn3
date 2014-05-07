@@ -19,6 +19,7 @@ Background my_bg;
 Firepot my_pot(jumplength);
 Fireloop my_loop(jumplength);
 model rockloader; // loader
+int viewmode; // 1: 1st person view, 2: 3rd person view, 3: top view, 4: side view
 
 void init(void)
 {
@@ -30,6 +31,7 @@ void init(void)
 	my_lion.jump_state = 0;
 	translateLoop=0;
 	startfresh=0;
+	viewmode = 1;
 
 	srand((unsigned int)time(NULL));
 	
