@@ -226,4 +226,5 @@ void Background::drawFlag(){
 	glVertex2f(20, 36);
 	glVertex2f(0, 30);
 	glEnd();
+	glLineWidth(1);
 }
