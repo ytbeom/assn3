@@ -153,9 +153,9 @@ void display(void)
 			}
 		}
 
-		gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();	
+		glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+//		glMatrixMode(GL_MODELVIEW);
+//		glLoadIdentity();	
 		//gluLookAt(0.0, 0.0, 100.0, my_lion.x, my_lion.y, 0.0, 0.0, 1.0, 0.0);
 		glutPostRedisplay();
 
@@ -200,12 +200,7 @@ void display(void)
 		glPushMatrix();
 		glTranslatef(my_pot.PotList[0],0,0);
 		glScalef(10.0,10.0,10.0);
-		//rockloader.Draw();
-		glBegin(GL_POLYGON);
-		for (int i=0;i<3;i++) {
-			glVertex3f(rockloader.vertexBuffer[i*3+0],rockloader.vertexBuffer[i*3+1],0.0);
-		}
-		glEnd();
+		rockloader.Draw();
 		glPopMatrix();
 
 		glFlush();
@@ -249,9 +244,9 @@ void Jump(int jump_direction){
 			jump_upX+=1;
 		print_x = jump_upX;
 	}
-	gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();	
+	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+//	glMatrixMode(GL_MODELVIEW);
+//	glLoadIdentity();	
 	//gluLookAt(0.0, 0.0, 100.0, my_lion.x, my_lion.y, 0.0, 0.0, 1.0, 0.0);
 	glutPostRedisplay();
 
@@ -302,11 +297,9 @@ void reshape(int w, int h)
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//gluPerspective(60.0,2,10,1000);
-	//gluLookAt(0.0, 0.0, 100.0, my_lion.x, my_lion.y, 0.0, 0.0, 1.0, 0.0);
-	gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+//	glMatrixMode(GL_MODELVIEW);
+//	glLoadIdentity();
 }
 
 void moveObjects(int) {

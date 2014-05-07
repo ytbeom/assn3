@@ -30,7 +30,7 @@ void Fireloop::display_3d_fireloop(float lion_x, int translateLoop) {
 			glPushMatrix();
 			glTranslatef(LoopList[i],70,0);
 			glRotatef(90,0.0,1.0,0.0);
-			glutWireTorus(5, 25, 20, 20);
+			glutWireTorus(3, 27, 20, 20);
 			glPopMatrix();
 		}
 	}
