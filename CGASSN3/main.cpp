@@ -152,9 +152,9 @@ void display(void)
 			}
 		}
 
-		gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();	
+		glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+//		glMatrixMode(GL_MODELVIEW);
+//		glLoadIdentity();	
 		glutPostRedisplay();
 
 		//translate Loop and draw 3D fireloop
@@ -198,12 +198,7 @@ void display(void)
 		glPushMatrix();
 		glTranslatef(my_pot.PotList[0],0,0);
 		glScalef(10.0,10.0,10.0);
-		//rockloader.Draw();
-		glBegin(GL_POLYGON);
-		for (int i=0;i<3;i++) {
-			glVertex3f(rockloader.vertexBuffer[i*3+0],rockloader.vertexBuffer[i*3+1],0.0);
-		}
-		glEnd();
+		rockloader.Draw();
 		glPopMatrix();
 
 		glFlush();
@@ -247,9 +242,9 @@ void Jump(int jump_direction){
 			jump_upX+=1;
 		print_x = jump_upX;
 	}
-	gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();	
+	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+//	glMatrixMode(GL_MODELVIEW);
+//	glLoadIdentity();	
 	glutPostRedisplay();
 
 	my_lion.y = bottom + 60 - 0.066*(print_x-30)*(print_x-30);
@@ -298,9 +293,9 @@ void reshape(int w, int h)
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+//	glMatrixMode(GL_MODELVIEW);
+//	glLoadIdentity();
 }
 
 void moveObjects(int) {
