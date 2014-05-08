@@ -138,13 +138,27 @@ void Background::drawFlying(int season, float X, float Y){
 	glPopMatrix();
 }
 
-void Background::info(float lion_x){
-	glPushMatrix();
-	glTranslatef(lion_x,0,0);
+void Background::info(float lion_x, int viewmode){
 	void *font = GLUT_BITMAP_TIMES_ROMAN_24;
 	char string[] ="STAGE : ";
 	glColor3f(0,0,0.5);
-	glRasterPos2f(120,90);
+	switch (viewmode) {
+	case 1:
+		break;
+	case 2:
+		break;
+	case 3:
+		glRasterPos3f(0.9*mapsize,0,0.2*mapsize);
+		break;
+	case 4:
+		glRasterPos3f(0.9*mapsize, 0.2*mapsize,0);
+		break;
+	case 5:
+		glPushMatrix();
+		glTranslatef(lion_x,0,0);
+		glRasterPos2f(120,90);
+		break;
+	}
 	int len = 8;
 	for(int i=0;i<len;i++)
 		glutBitmapCharacter(font,string[i]);
@@ -154,18 +168,52 @@ void Background::info(float lion_x){
 
 
 	glColor3f(1,0,0);
-	glBegin(GL_POLYGON);
-	glVertex2f(145, 91);
-	int now=lion_x;
-	if(lion_x<0)
-		now=0;
-	for( float angle = 0;angle<((now/mapsize)*2)*PI;angle+=0.1){
-		float x = 145+2*cos(angle);
-		float y = 91+2*sin(angle);
-		glVertex2f(x,y);
+	
+	int now=lion_x;	
+	switch (viewmode) {
+	case 1:
+		break;
+	case 2:
+		break;
+	case 3:
+		glBegin(GL_POLYGON);
+		glVertex3f(0.9*mapsize,0,0.2*mapsize-50);
+		if(lion_x<0)
+			now=0;
+		for( float angle = 0;angle<((now/mapsize)*2)*PI;angle+=0.1){
+			float x = 0.9*mapsize+20*cos(angle);
+			float y = 0.2*mapsize-50+20*sin(angle);
+			glVertex3f(x,0,y);
+		}
+		glEnd();
+		break;
+	case 4:
+		glBegin(GL_POLYGON);
+		glVertex3f(0.9*mapsize, 0.2*mapsize-50,0);
+		if(lion_x<0)
+			now=0;
+		for( float angle = 0;angle<((now/mapsize)*2)*PI;angle+=0.1){
+			float x = 0.9*mapsize+20*cos(angle);
+			float y = 0.2*mapsize-50+20*sin(angle);
+			glVertex3f(x,y,0);
+		}
+		glEnd();
+		break;
+	case 5:
+		glBegin(GL_POLYGON);
+		glVertex2f(145, 91);
+		if(lion_x<0)
+			now=0;
+		for( float angle = 0;angle<((now/mapsize)*2)*PI;angle+=0.1){
+			float x = 145+2*cos(angle);
+			float y = 91+2*sin(angle);
+			glVertex2f(x,y);
+		}
+		glEnd();
+		glPopMatrix();
+		break;
 	}
-	glEnd();
-	glPopMatrix();
+	
 }
 
 void Background::drawMaple(){

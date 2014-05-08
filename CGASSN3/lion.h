@@ -33,8 +33,8 @@ public:
 	Lion();
 	void drawLeg();
 	void drawLion();
-	void drawDeath(Lion my_lion);
-	void drawClear(Lion my_lion);
+	void drawDeath(Lion my_lion, int viewmode);
+	void drawClear(Lion my_lion, int viewmode);
 
 	// assignment2 functions
 	void drawTorso();

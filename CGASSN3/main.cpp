@@ -31,7 +31,7 @@ void init(void)
 	my_lion.jump_state = 0;
 	translateLoop=0;
 	startfresh=0;
-	viewmode = 2;
+	viewmode = 4;
 
 	srand((unsigned int)time(NULL));
 	
@@ -94,7 +94,7 @@ void display(void)
 		BackgroundChange=0;
 
 	if (!collision() && my_lion.x > mapsize && my_bg.season<4) {
-		my_lion.drawClear(my_lion);
+		my_lion.drawClear(my_lion, viewmode);
 		glFlush();
 		glutSwapBuffers();
 		Sleep(2000);
@@ -103,7 +103,7 @@ void display(void)
 		//exit(1);
 	}
 	else if (!collision() && my_lion.x > mapsize && my_bg.season==4) {
-		my_lion.drawClear(my_lion);
+		my_lion.drawClear(my_lion, viewmode);
 		glFlush();
 		glutSwapBuffers();
 		Sleep(2000);
@@ -111,9 +111,7 @@ void display(void)
 	}
 	else if(!collision()) {		
 		my_bg.draw(BackgroundChange);
-		my_bg.info(my_lion.x);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
+		my_bg.info(my_lion.x, viewmode);
 		startfresh=1;
 		bool right = ((GetAsyncKeyState(VK_RIGHT) & 0x8000) == 0x8000);
 		bool left = ((GetAsyncKeyState(VK_LEFT) & 0x8000) == 0x8000);
@@ -152,10 +150,10 @@ void display(void)
 				glutTimerFunc(100, Stop, 1);
 			}
 		}
-
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
 		switch(viewmode) {
 		case 1:
-			glOrtho(-50, 50+mapsize, -mapsize/4, -mapsize/4+50+mapsize/2, -50, 50);
 			break;
 		case 2:
 			break;
@@ -164,6 +162,9 @@ void display(void)
 			glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
 			break;
 		case 4:
+			glOrtho(-50, 50+mapsize, -mapsize/4, -mapsize/4+50+mapsize/2, -50, 50);
+			break;
+		case 5:
 			glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
 			break;
 		}
@@ -219,7 +220,7 @@ void display(void)
 	}
 	
 	else {
-		my_lion.drawDeath(my_lion);
+		my_lion.drawDeath(my_lion, viewmode);
 		glFlush();
 		glutSwapBuffers();
 		Sleep(2000);
@@ -255,7 +256,23 @@ void Jump(int jump_direction){
 			jump_upX+=1;
 		print_x = jump_upX;
 	}
-	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+	switch(viewmode) {
+	case 1:
+		break;
+	case 2:
+		break;
+	case 3:
+		glRotatef(90,1,0,0);
+		glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
+		break;
+	case 4:
+		glOrtho(-50, 50+mapsize, -mapsize/4, -mapsize/4+50+mapsize/2, -50, 50);
+		break;
+	case 5:
+		glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+		break;
+	}
+	
 //	glMatrixMode(GL_MODELVIEW);
 //	glLoadIdentity();	
 	glutPostRedisplay();
@@ -299,6 +316,33 @@ void specialkeyboard(int key, int x, int y)
 	//glutPostRedisplay();
 }
 
+void keyboard(unsigned char key, int x, int y) {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	switch (key) {
+	case '1':
+		// 시점변환
+		break;
+	case '2':
+		// 시점변환
+		break;
+	case '3':
+		glRotatef(90,1,0,0);
+		glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
+		viewmode = 3;
+		break;
+	case '4':
+		glOrtho(-50, 50+mapsize, -mapsize/4, -mapsize/4+50+mapsize/2, -50, 50);
+		viewmode = 4;
+		break;
+	case '5':
+		glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+		viewmode = 5;
+		break;
+	}
+	glutPostRedisplay();
+}
+
 void reshape(int w, int h)
 {
 	// TODO
@@ -332,7 +376,8 @@ int main(int argc, char** argv)
 	init();
 
 	glutDisplayFunc(display);
-	glutReshapeFunc(reshape);
+//	glutReshapeFunc(reshape);
+	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(specialkeyboard);
 
 	glutTimerFunc(2000/60,moveObjects,1);

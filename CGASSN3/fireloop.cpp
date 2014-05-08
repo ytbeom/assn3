@@ -25,7 +25,7 @@ void Fireloop::init(int _jumplength, float _mapsize, int stage){
 
 void Fireloop::display_3d_fireloop(float lion_x, int translateLoop) {
 	for (int i=0; i < NumofLoop; i++) {
-		if(lion_x-100<LoopList[i]+translateLoop&&LoopList[i]+translateLoop<lion_x+1000) {
+		if(0<LoopList[i]+translateLoop && LoopList[i]+translateLoop<mapsize) {
 			glColor3f(1.0, 0.0, 0.0);
 			glPushMatrix();
 			glTranslatef(LoopList[i],70,0);
