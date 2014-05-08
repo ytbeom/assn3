@@ -24,7 +24,7 @@ void Rock::display_rock() {
 	// 항아리를 그리는 부분
 	for (int i = 0; i < NumofRock; i++) {
 		glPushMatrix();
-		glTranslatef(RockList[i],15,0);
+		glTranslatef(RockList[i],15,6);
 		glScalef(6.0,6.0,6.0);
 		rockmodel.draw();
 		glPopMatrix();

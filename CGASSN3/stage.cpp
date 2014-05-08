@@ -148,7 +148,7 @@ void Background::info(float lion_x, int viewmode){
 	case 2:
 		break;
 	case 3:
-		glRasterPos3f(0.9*mapsize,0,0.2*mapsize);
+		glRasterPos3f(0.9*mapsize,0,-0.2*mapsize);
 		break;
 	case 4:
 		glRasterPos3f(0.9*mapsize, 0.2*mapsize,0);
@@ -177,12 +177,12 @@ void Background::info(float lion_x, int viewmode){
 		break;
 	case 3:
 		glBegin(GL_POLYGON);
-		glVertex3f(0.9*mapsize,0,0.2*mapsize-50);
+		glVertex3f(0.9*mapsize,0,-0.2*mapsize+50);
 		if(lion_x<0)
 			now=0;
 		for( float angle = 0;angle<((now/mapsize)*2)*PI;angle+=0.1){
 			float x = 0.9*mapsize+20*cos(angle);
-			float y = 0.2*mapsize-50+20*sin(angle);
+			float y = -0.2*mapsize+50-20*sin(angle);
 			glVertex3f(x,0,y);
 		}
 		glEnd();

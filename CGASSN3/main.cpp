@@ -14,12 +14,12 @@ int BackgroundChange = 0;
 int translateLoop;
 int stage=1;
 int startfresh;
+int viewmode = 5; // 1: 1st person view, 2: 3rd person view, 3: top view, 4: side view 5: assignment 1,2 view
 Lion my_lion;
 Background my_bg;
 //Firepot my_pot(jumplength);
 Rock my_rock(jumplength);
 Fireloop my_loop(jumplength);
-int viewmode; // 1: 1st person view, 2: 3rd person view, 3: top view, 4: side view
 
 void init(void)
 {
@@ -31,7 +31,6 @@ void init(void)
 	my_lion.jump_state = 0;
 	translateLoop=0;
 	startfresh=0;
-	viewmode = 4;
 
 	srand((unsigned int)time(NULL));
 	
@@ -154,11 +153,14 @@ void display(void)
 		glLoadIdentity();
 		switch(viewmode) {
 		case 1:
+			
 			break;
 		case 2:
+			gluPerspective(30,0.5,my_lion.x-100,my_lion.x+500);
+			gluLookAt(my_lion.x-500,50,0,my_lion.x+500,50,0,0,1,0);
 			break;
 		case 3:
-			glRotatef(90,1,0,0);
+			glRotatef(90,-1,0,0);
 			glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
 			break;
 		case 4:
@@ -169,8 +171,8 @@ void display(void)
 			break;
 		}
 		
-//		glMatrixMode(GL_MODELVIEW);
-//		glLoadIdentity();	
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();	
 		glutPostRedisplay();
 
 		//translate Loop and draw 3D fireloop
@@ -321,23 +323,25 @@ void keyboard(unsigned char key, int x, int y) {
 	glLoadIdentity();
 	switch (key) {
 	case '1':
-		// 시점변환
+		viewmode = 1;
 		break;
 	case '2':
-		// 시점변환
+		viewmode = 2;
+		gluPerspective(30,0.5,my_lion.x-100,my_lion.x+500);
+		gluLookAt(my_lion.x-500,50,0,my_lion.x+500,50,0,0,1,0);
 		break;
 	case '3':
-		glRotatef(90,1,0,0);
-		glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
 		viewmode = 3;
+		glRotatef(90,-1,0,0);
+		glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
 		break;
 	case '4':
-		glOrtho(-50, 50+mapsize, -mapsize/4, -mapsize/4+50+mapsize/2, -50, 50);
 		viewmode = 4;
+		glOrtho(-50, 50+mapsize, -mapsize/4, -mapsize/4+50+mapsize/2, -50, 50);
 		break;
 	case '5':
-		glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
 		viewmode = 5;
+		glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
 		break;
 	}
 	glutPostRedisplay();
