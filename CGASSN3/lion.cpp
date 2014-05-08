@@ -46,25 +46,49 @@ int Lion::IsCollisionLoop(float _x, float _y, float _radius){
 	return false;
 }
 
-void Lion::drawDeath(Lion my_lion){
+void Lion::drawDeath(Lion my_lion, int viewmode){
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	void *font = GLUT_BITMAP_TIMES_ROMAN_24;
 	char string[] ="GAME OVER";
 	glColor3f(1.0,1.0,1.0);
-	glRasterPos2f(my_lion.x,50);
+	switch (viewmode) {
+	case 1:
+		break;
+	case 2:
+		break;
+	case 3:
+	case 4:
+		glRasterPos2f(mapsize/2, 0);
+		break;
+	case 5:
+		glRasterPos2f(my_lion.x,50);
+		break;
+	}
 	int len = 9;
 	for(int i=0;i<len;i++)
 		glutBitmapCharacter(font,string[i]);
 }
 
-void Lion::drawClear(Lion my_lion){
+void Lion::drawClear(Lion my_lion, int viewmode){
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	void *font = GLUT_BITMAP_TIMES_ROMAN_24;
 	char string[] ="STAGE CLEAR";
 	glColor3f(1.0,1.0,1.0);
-	glRasterPos2f(my_lion.x+15,50);
+		switch (viewmode) {
+	case 1:
+		break;
+	case 2:
+		break;
+	case 3:
+	case 4:
+		glRasterPos2f(mapsize/2, 0);
+		break;
+	case 5:
+		glRasterPos2f(my_lion.x+15,50);
+		break;
+	}
 	int len = 11;
 	for(int i=0;i<len;i++)
 		glutBitmapCharacter(font,string[i]);

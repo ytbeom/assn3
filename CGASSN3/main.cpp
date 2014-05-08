@@ -4,7 +4,7 @@
 #include "firepot.h"
 #include "fireloop.h"
 #include "stage.h"
-#include "ObjLoader.h"
+#include "rock.h"
 
 float mapsize;
 float bottom = 20.0;
@@ -14,12 +14,12 @@ int BackgroundChange = 0;
 int translateLoop;
 int stage=1;
 int startfresh;
-int view;
+int viewmode = 5; // 1: 1st person view, 2: 3rd person view, 3: top view, 4: side view 5: assignment 1,2 view
 Lion my_lion;
 Background my_bg;
-Firepot my_pot(jumplength);
+//Firepot my_pot(jumplength);
+Rock my_rock(jumplength);
 Fireloop my_loop(jumplength);
-//Model_OBJ rockloader; // loader
 
 void init(void)
 {
@@ -31,20 +31,20 @@ void init(void)
 	my_lion.jump_state = 0;
 	translateLoop=0;
 	startfresh=0;
-	view = 0;
+
 	srand((unsigned int)time(NULL));
 	
 	// 1000에서 2000 사이의 mapsize 생성
 	mapsize = rand()%1000+1000;
 //	mapsize = 200;
 	my_bg.init(mapsize,bottom,stage);
-	my_pot.init(jumplength,mapsize,stage);
+	//my_pot.init(jumplength,mapsize,stage);
+	my_rock.init(jumplength,mapsize,stage);
 	my_loop.init(jumplength,mapsize,stage);
-	// load model
-	//rockloader.Load("tri_rock.obj");
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glShadeModel(GL_FLAT);
+	glEnable(GL_DEPTH_TEST);
 }
 
 int collision(){
@@ -88,53 +88,13 @@ void Stop(int value){
 void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glEnable( GL_DEPTH_TEST );
-	glMatrixMode (GL_MODELVIEW);
-	glLoadIdentity();
-
-	switch(view){
-		case 0:	
-			gluLookAt(40, 0, 40.0, 0, 0, 0.0, 0.0, 1.0, 0.0);
-			//gluLookAt(my_lion.x+5, my_lion.y, 0.0, my_lion.x+10, my_lion.y-10, 0.0, 0.0, 1.0, 0.0); 
-			break;
-		case 1: gluLookAt(-50, -50, 0.0, 0, 0, 0.0, 0.0, 1.0, 0.0);
-			break;
-		case 2:
-			//gluLookAt(0, 200, 0.0, 0, 0, 0.0, 1.0, 0.0, 0.0);
-			gluLookAt(0, 500, 0.0, 0, 0.0, 0.0, 1.0, 0.0, 0.0);
-			break;
-		case 3: glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
-			break;
-	}
-
-	glColor3f(1.0, 1.0, 0.0);
-	glLineWidth(5);
-	glBegin(GL_LINE_STRIP);
-	glVertex3f(-1000, 0, 0);
-	glVertex3f(1000, 0, 0);
-	glEnd();
-	glColor3f(1.0, 1.0, 1.0);
-	glLineWidth(5);
-	glBegin(GL_LINE_STRIP);
-	glVertex3f(0, -1000, 0);
-	glVertex3f(0, 1000, 0);
-	glEnd();
-	glColor3f(0.0, 0.0, 1.0);
-	glLineWidth(5);
-	glBegin(GL_LINE_STRIP);
-	glVertex3f(0, 0, -1000);
-	glVertex3f(0, 0, 1000);
-	glEnd();
-
-
-	
 	if (BackgroundChange < 9) 
 		BackgroundChange++;
 	else
 		BackgroundChange=0;
 
 	if (!collision() && my_lion.x > mapsize && my_bg.season<4) {
-		my_lion.drawClear(my_lion);
+		my_lion.drawClear(my_lion, viewmode);
 		glFlush();
 		glutSwapBuffers();
 		Sleep(2000);
@@ -143,7 +103,7 @@ void display(void)
 		//exit(1);
 	}
 	else if (!collision() && my_lion.x > mapsize && my_bg.season==4) {
-		my_lion.drawClear(my_lion);
+		my_lion.drawClear(my_lion, viewmode);
 		glFlush();
 		glutSwapBuffers();
 		Sleep(2000);
@@ -151,9 +111,7 @@ void display(void)
 	}
 	else if(!collision()) {		
 		my_bg.draw(BackgroundChange);
-		my_bg.info(my_lion.x);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
+		my_bg.info(my_lion.x, viewmode);
 		startfresh=1;
 		bool right = ((GetAsyncKeyState(VK_RIGHT) & 0x8000) == 0x8000);
 		bool left = ((GetAsyncKeyState(VK_LEFT) & 0x8000) == 0x8000);
@@ -192,24 +150,31 @@ void display(void)
 				glutTimerFunc(100, Stop, 1);
 			}
 		}
-
-		glMatrixMode (GL_MODELVIEW);
+		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-
-	switch(view){
-		case 0:	
-			gluLookAt(40, 0, 40.0, 0, 0, 0.0, 0.0, 1.0, 0.0);
-			//gluLookAt(my_lion.x+5, my_lion.y, 0.0, my_lion.x+10, my_lion.y-10, 0.0, 0.0, 1.0, 0.0); 
-			break;
-		case 1: gluLookAt(-50, -50, 0.0, 0, 0, 0.0, 0.0, 1.0, 0.0);
+		switch(viewmode) {
+		case 1:
+			gluPerspective(60,2,10,1000);
+			gluLookAt(my_lion.x,my_lion.y,0,my_lion.x+500,my_lion.y,0,0,1,0);
 			break;
 		case 2:
-			//gluLookAt(0, 200, 0.0, 0, 0, 0.0, 1.0, 0.0, 0.0);
-			gluLookAt(0, 500, 0.0, 0, 0.0, 0.0, 1.0, 0.0, 0.0);
+			gluPerspective(60,2,10,1000);
+			gluLookAt(my_lion.x-100,60,0,my_lion.x+500,50,0,0,1,0);
 			break;
-		case 3: glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+		case 3:
+			glRotatef(90,-1,0,0);
+			glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
 			break;
-	}
+		case 4:
+			glOrtho(-50, 50+mapsize, -mapsize/4, -mapsize/4+50+mapsize/2, -50, 50);
+			break;
+		case 5:
+			glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+			break;
+		}
+		
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();	
 		glutPostRedisplay();
 
 		//translate Loop and draw 3D fireloop
@@ -218,39 +183,53 @@ void display(void)
 		my_loop.display_3d_fireloop(my_lion.x, translateLoop);
 		glPopMatrix();
 
-	
+		/*
+		//translate Loop
+		glPushMatrix();
+		glTranslatef(translateLoop,0,0);
+		my_loop.display_fireloop_front(BackgroundChange, my_lion.x, translateLoop);
+		glPopMatrix();
+		*/
+
 		//draw lion
+		//my_lion.drawLeg();
 		glPushMatrix();
 		glTranslatef(my_lion.x,my_lion.y,0);
-
-		
 		my_lion.drawLion();
-		
-		
 		glPopMatrix();
 
+		/*
+		//translate Loop
+		glPushMatrix();
+		glTranslatef(translateLoop,0,0);
+		my_loop.display_fireloop_back(BackgroundChange, my_lion.x, translateLoop);
+		glPopMatrix();
+		*/
 
+		/*
+		//draw firepot
+		glPushMatrix();
+		glScalef(0.5f,0.5f,1.0f);
+		my_pot.display_firepot(BackgroundChange);
+		glPopMatrix();
+		*/
 
 		// draw rock
 		glPushMatrix();
-		glTranslatef(my_pot.PotList[0],bottom,0);
-		glScalef(10.0,10.0,10.0);
-//		rockloader.Draw();
+		my_rock.display_rock();
 		glPopMatrix();
 
 		glFlush();
+		glutSwapBuffers();
 	}
 	
 	else {
-		my_lion.drawDeath(my_lion);
+		my_lion.drawDeath(my_lion, viewmode);
 		glFlush();
 		glutSwapBuffers();
 		Sleep(2000);
 		exit(1);
 	}
-
-	
-	glutSwapBuffers();
 }
 
 float jump_initX = 0;
@@ -281,30 +260,29 @@ void Jump(int jump_direction){
 			jump_upX+=1;
 		print_x = jump_upX;
 	}
-//	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+	switch(viewmode) {
+	case 1:
+		gluPerspective(60,2,10,1000);
+		gluLookAt(my_lion.x,my_lion.y,0,my_lion.x+500,my_lion.y,0,0,1,0);
+		break;
+	case 2:
+		gluPerspective(60,2,10,1000);
+		gluLookAt(my_lion.x-100,60,0,my_lion.x+500,50,0,0,1,0);
+		break;
+	case 3:
+		glRotatef(90,1,0,0);
+		glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
+		break;
+	case 4:
+		glOrtho(-50, 50+mapsize, -mapsize/4, -mapsize/4+50+mapsize/2, -50, 50);
+		break;
+	case 5:
+		glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+		break;
+	}
+	
 //	glMatrixMode(GL_MODELVIEW);
 //	glLoadIdentity();	
-	//gluLookAt(0.0, 0.0, 100.0, my_lion.x, my_lion.y, 0.0, 0.0, 1.0, 0.0);
-
-	glMatrixMode (GL_MODELVIEW);
-	glLoadIdentity();
-
-	switch(view){
-		case 0:	
-			gluLookAt(40, 0, 40.0, 0, 0, 0.0, 0.0, 1.0, 0.0);
-			//gluLookAt(my_lion.x+5, my_lion.y, 0.0, my_lion.x+10, my_lion.y-10, 0.0, 0.0, 1.0, 0.0); 
-			break;
-		case 1: gluLookAt(-50, -50, 0.0, 0, 0, 0.0, 0.0, 1.0, 0.0);
-			break;
-		case 2:
-			//gluLookAt(0, 200, 0.0, 0, 0, 0.0, 1.0, 0.0, 0.0);
-			gluLookAt(0, 500, 0.0, 0, 0.0, 0.0, 1.0, 0.0, 0.0);
-			break;
-		case 3: glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
-			break;
-	}
-
-
 	glutPostRedisplay();
 
 	my_lion.y = bottom + 60 - 0.066*(print_x-30)*(print_x-30);
@@ -323,8 +301,8 @@ void Jump(int jump_direction){
 
 void specialkeyboard(int key, int x, int y)
 {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	//glMatrixMode(GL_PROJECTION);
+	//glLoadIdentity();
 	switch (key) {
 	case GLUT_KEY_UP:
 		if(my_lion.y==bottom&&startfresh==1) {
@@ -339,39 +317,42 @@ void specialkeyboard(int key, int x, int y)
 				glutTimerFunc(700/60,Jump,0);
 		}
 		break;
-	case GLUT_KEY_DOWN:
-		if(view>=4)
-			view=0;
-		else
-			view++;
-		break;
-
 	}
 	//gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
 	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
-	//gluLookAt(0.0, 0.0, 100.0, 0.0, 5.0, 0.0, 0.0, 1.0, 0.0);
-	//gluLookAt(0.0, 0.0, 100.0, my_lion.x, my_lion.y, 0.0, 0.0, 1.0, 0.0);
+	//glLoadIdentity();	
+	//glutPostRedisplay();
+}
 
-	glMatrixMode (GL_MODELVIEW);
+void keyboard(unsigned char key, int x, int y) {
+	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-
-	switch(view){
-		case 0:	
-			gluLookAt(40, 0, 40.0, 0, 0, 0.0, 0.0, 1.0, 0.0);
-			//gluLookAt(my_lion.x+5, my_lion.y, 0.0, my_lion.x+10, my_lion.y-10, 0.0, 0.0, 1.0, 0.0); 
-			break;
-		case 1: gluLookAt(-50, -50, 0.0, 0, 0, 0.0, 0.0, 1.0, 0.0);
-			break;
-		case 2:
-			//gluLookAt(0, 200, 0.0, 0, 0, 0.0, 1.0, 0.0, 0.0);
-			gluLookAt(0, 500, 0.0, 0, 0.0, 0.0, 1.0, 0.0, 0.0);
-			break;
-		case 3: glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
-			break;
+	switch (key) {
+	case '1':
+		viewmode = 1;
+		gluPerspective(60,2,10,1000);
+		gluLookAt(my_lion.x,my_lion.y,0,my_lion.x+500,my_lion.y,0,0,1,0);
+		break;
+	case '2':
+		viewmode = 2;
+		//gluPerspective(60,0.5,my_lion.x-100,my_lion.x+500);
+		gluPerspective(60,2,10,1000);
+		gluLookAt(my_lion.x-100,60,0,my_lion.x+500,50,0,0,1,0);
+		break;
+	case '3':
+		viewmode = 3;
+		glRotatef(90,-1,0,0);
+		glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
+		break;
+	case '4':
+		viewmode = 4;
+		glOrtho(-50, 50+mapsize, -mapsize/4, -mapsize/4+50+mapsize/2, -50, 50);
+		break;
+	case '5':
+		viewmode = 5;
+		glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+		break;
 	}
-
-
 	glutPostRedisplay();
 }
 
@@ -382,19 +363,7 @@ void reshape(int w, int h)
 	glViewport(0, 0, (GLsizei) w, (GLsizei) h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	
-	switch(view){
-	case 0:	gluPerspective(60.0,2.0,1.0,1000.0);
-		printf("return to 0!\n");
-		break;
-	case 1: gluPerspective(60.0,2.0,1.0,1000.0);
-		break;
-	case 2: gluPerspective(60.0,2.0,1.0,1000.0);
-		break;
-	case 3: glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);\
-		break;
-	}
-//	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
+	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
 //	glMatrixMode(GL_MODELVIEW);
 //	glLoadIdentity();
 }
@@ -420,7 +389,8 @@ int main(int argc, char** argv)
 	init();
 
 	glutDisplayFunc(display);
-	glutReshapeFunc(reshape);
+//	glutReshapeFunc(reshape);
+	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(specialkeyboard);
 
 	glutTimerFunc(2000/60,moveObjects,1);

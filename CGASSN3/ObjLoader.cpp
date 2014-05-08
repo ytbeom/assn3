@@ -1,288 +1,408 @@
-#include "stdafx.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <gl/gl.h>
-#include <opencv/cv.h>
-#include <opencv/cxcore.h>
-#include <opencv/highgui.h>
-
 #include "ObjLoader.h"
 
-CObjLoader::CObjLoader ()
+
+////////////////////////////////////////////////////////////////////
+// Allocate memory and load targa bits. Returns pointer to new buffer,
+// height, and width of texture, and the OpenGL format of data.
+// Call free() on buffer when finished!
+// This only works on pretty vanilla targas... 8, 24, or 32 bit color
+// only, no palettes, no RLE encoding.
+GLbyte *gltLoadTGA(const char *szFileName, GLint *iWidth, GLint *iHeight, GLint *iComponents, GLenum *eFormat)
 {
-	materials.reserve (100000);
+	FILE *pFile;			// File pointer
+	TGAHEADER tgaHeader;		// TGA file header
+	unsigned long lImageSize;		// Size in bytes of image
+	short sDepth;			// Pixel depth;
+	GLbyte	*pBits = NULL;          // Pointer to bits
 
-	vertexes.reserve (100000);
-	texcoords.reserve (100000);
-	normals.reserve (100000);
+	// Default/Failed values
+	*iWidth = 0;
+	*iHeight = 0;
+	*eFormat = GL_BGR_EXT;
+	*iComponents = GL_RGB8;
 
-	parts.reserve (100000);
-	
-	_work_path[0] = 0;
-	_loaded = false;
-}
+	// Attempt to open the fil
+	pFile = fopen(szFileName, "rb");
+	if(pFile == NULL)
+		return NULL;
 
-bool CObjLoader::Load (char *objfile, char *mtlfile)
-{
-	_splitpath (objfile, NULL, _work_path, NULL, NULL);
+	// Read in header (binary)
+	fread(&tgaHeader, 18/* sizeof(TGAHEADER)*/, 1, pFile);
 
-	if (mtlfile && *mtlfile) {
-		loadMaterials (mtlfile);
-	}
-	if (objfile && *objfile) {
-		loadObjects (objfile);
-	}
-	return true;
-}
+	// Do byte swap for big vs little endian
+#ifdef __APPLE__
+	BYTE_SWAP(tgaHeader.colorMapStart);
+	BYTE_SWAP(tgaHeader.colorMapLength);
+	BYTE_SWAP(tgaHeader.xstart);
+	BYTE_SWAP(tgaHeader.ystart);
+	BYTE_SWAP(tgaHeader.width);
+	BYTE_SWAP(tgaHeader.height);
+#endif
 
-bool CObjLoader::loadObjects (char *fileName)
-{
-	FILE *fp = fopen (fileName, "r");
-	if (!fp) return false;
 
-	// 임시로 사용할 것을 하나 만든다
-	sPart part_;
-	part_.name[0] = 0;
-	parts.push_back (part_);
+	// Get width, height, and depth of texture
+	*iWidth = tgaHeader.width;
+	*iHeight = tgaHeader.height;
+	sDepth = tgaHeader.bits / 8;
 
-	sPart *part = (sPart *)&(*parts.rbegin ());
-	char buffer[1024];
+	// Put some validity checks here. Very simply, I only understand
+	// or care about 8, 24, or 32 bit targa's.
+	if(tgaHeader.bits != 8 && tgaHeader.bits != 24 && tgaHeader.bits != 32)
+		return NULL;
 
-	while (fscanf (fp, "%s", buffer) != EOF) {
-		bool go_eol = true;
+	// Calculate size of image buffer
+	lImageSize = tgaHeader.width * tgaHeader.height * sDepth;
 
-		if (!strncmp ("#", buffer, 1)) {
-		}
-		else if (!strcmp ("v", buffer)) {
-			// Specifies a geometric vertex and its x y z coordinates.
-			sVertex v;
-			fscanf (fp, "%f %f %f", &v.x, &v.y, &v.z);
-			vertexes.push_back (v);
-		}
-		else if (!strcmp ("vn", buffer)){
-			// Specifies a normal vector with components i, j, and k. 
-			sVertex v;
-			fscanf (fp, "%f %f %f", &v.x, &v.y, &v.z);
-			normals.push_back (v);
-		}
-		else if (!strcmp ("vt", buffer)) {
-			// Specifies a texture vertex and its u v coordinates.
-			sTexCoord t;
-			fscanf (fp, "%f %f", &t.u, &t.v);
-			texcoords.push_back (t);
-		}
-		else if (!strcmp ("f", buffer)){
-			// Using v, vt, and vn to represent geometric vertices, texture vertices,
-			// and vertex normals, the statement would read:
-			//
-			//    f v/vt/vn v/vt/vn v/vt/vn v/vt/vn
-			sFace f;
-			fgets (buffer, 1024, fp);
+	// Allocate memory and check for success
+	pBits = ( GLbyte* )malloc(lImageSize * sizeof(GLbyte));
+	if(pBits == NULL)
+		return NULL;
 
-			char *p = buffer;
-			for (int i=0; i<5; ++i) {
-				while (*p==' ' || *p=='\t') p++;
-				if (*p=='\0' || *p=='\r' || *p=='\n') break;
-
-				f.v[i] = strtoul (p, &p, 10);
-				if (*p && *p=='/') { 
-					p++;
-					f.vt[i] = strtoul (p, &p, 10);
-					if (*p && *p=='/') {
-						p++;
-						f.vn[i] = strtoul (p, &p, 10);
-					}
-				}
-				f.n++;
-			}
-
-			if (part) part->faces.push_back (f);
-			go_eol = false;
-		}
-		else if (!strcmp ("usemtl", buffer)) {
-			sPart part_;
-			
-			fscanf (fp, "%s", part_.name);
-			parts.push_back (part_);
-
-			part = (sPart *)&(*parts.rbegin ());
-		}
-		else if (!strcmp ("mtllib", buffer)) {
-			fscanf (fp, "%s", buffer);
-
-			char path[MAX_PATH];
-			_makepath (path, NULL, _work_path, buffer, NULL);
-
-			loadMaterials (path);
-		}
-		if (go_eol) fgets (buffer, 1024, fp);
-	}
-	fclose (fp);
-	return true;
-}
-
-bool CObjLoader::loadMaterials (char *fileName)
-{
-	FILE *fp = fopen (fileName, "r");
-	if (!fp) return false;
-
-	sMaterial *material = NULL;
-	char buffer[1024];
-
-	while (fscanf (fp, "%s", buffer) != EOF) {
-		if (!strncmp ("#", buffer, 1)) {
-		}
-		else if (!strcmp ("newmtl", buffer)){
-			sMaterial material_;
-			fscanf (fp, "%s", material_.name);
-
-			materials.push_back (material_);
-			material = (sMaterial *)&(*materials.rbegin ());
-		}
-		else if (!strcmp ("Ka", buffer)) {
-			// defines the ambient color of the material to be (r,g,b)
-			if (material) fscanf (fp, "%f %f %f", &material->Ka[0], &material->Ka[1], &material->Ka[2]);
-		}
-		else if (!strcmp ("Kd", buffer)) {
-			// defines the diffuse reflectivity color of the material to be (r,g,b)
-			if (material) fscanf (fp, "%f %f %f", &material->Kd[0], &material->Kd[1], &material->Kd[2]);
-		}
-		else if (!strcmp ("Ks", buffer)) {
-			// defines the specular reflectivity color of the material to be (r,g,b)
-			if (material) fscanf (fp, "%f %f %f", &material->Ks[0], &material->Ks[1], &material->Ks[2]);
-		}
-		else if (!strcmp ("Tf", buffer)) {
-			// specify the transmission filter of the current material to be (r,g,b)
-			if (material) fscanf (fp, "%f %f %f", &material->Tf[0], &material->Tf[1], &material->Tf[2]);
-		}
-		else if (!strcmp ("illum", buffer)) {
-			// specifies the illumination model to use in the material
-			//  "illum_#"can be a number from 0 to 10
-			//	 0	Color on and Ambient off
-			//	 1	Color on and Ambient on
-			//	 2	Highlight on
-			//	 3	Reflection on and Ray trace on
-			//	 4	Transparency: Glass on Reflection: Ray trace on
-			//	 5	Reflection: Fresnel on and Ray trace on
-			//	 6	Transparency: Refraction on Reflection: Fresnel off and Ray trace on
-			//	 7	Transparency: Refraction on Reflection: Fresnel on and Ray trace on
-			//	 8	Reflection on and Ray trace off
-			//	 9	Transparency: Glass on Reflection: Ray trace off
-			//	 10	Casts shadows onto invisible surfaces
-			if (material) fscanf (fp, "%i", &material->illum);
-		}
-		else if (!strcmp ("map_Kd", buffer)) {
-			if (material) fscanf (fp, "%s", material->map_Kd);
-		}
-		else if (!strcmp ("Ns", buffer)) {
-			if (material) fscanf (fp, "%f", &material->Ns);
-		}
-		else if (!strcmp ("Ni", buffer)) {
-			if (material) fscanf (fp, "%f", &material->Ni);
-		}
-		else if (!strcmp ("d", buffer)) {
-			if (material) fscanf (fp, "%f", &material->d);
-		}
-		fgets (buffer, 1024, fp);
-	}
-	fclose (fp);
-	return true;
-}
-
-int CObjLoader::findMaterialIndex(char *name)
-{
-	for (unsigned int i=0; i<materials.size (); ++i) {
-		if (!strcmp (name, materials[i].name)) {
-			return i;
-		}
-	}
-	return -1;
-}
-
-bool CObjLoader::loadTexture (char *fileName, unsigned int *texture)
-{
-	IplImage *img = cvLoadImage (fileName);
-	if (!img) return false;
-
-	cvFlip (img, img);
-
-	glGenTextures (1, texture);
-	glBindTexture (GL_TEXTURE_2D, *texture);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D (GL_TEXTURE_2D, 0, 3, img->width, img->height, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, img->imageData);
-
-	cvReleaseImage (&img);
-	return true;
-}
-
-void CObjLoader::loadMaterialsTexture ()
-{
-	for (unsigned int i=0; i<materials.size (); ++i) {
-		if (materials[i].map_Kd[0] && !materials[i].texture) {
-			char path[MAX_PATH];
-			_makepath (path, NULL, _work_path, materials[i].map_Kd, NULL);
-
-			loadTexture (path, &materials[i].texture);
-		}
-	}
-}
-
-void CObjLoader::Draw (float scale)
-{
-	if (!_loaded) {
-		loadMaterialsTexture ();
-		_loaded = true;
+	// Read in the bits
+	// Check for read error. This should catch RLE or other 
+	// weird formats that I don't want to recognize
+	if(fread(pBits, lImageSize, 1, pFile) != 1)
+	{
+		free(pBits);
+		return NULL;
 	}
 
-	int vt_size = vertexes.size ();
-	int tc_size = texcoords.size ();
-	int no_size = normals.size ();
+	// Set OpenGL format expected
+	switch(sDepth)
+	{
+	case 3:     // Most likely case
+		*eFormat = GL_BGR_EXT;
+		*iComponents = GL_RGB8;
+		break;
+	case 4:
+		*eFormat = GL_BGRA_EXT;
+		*iComponents = GL_RGBA8;
+		break;
+	case 1:
+		*eFormat = GL_LUMINANCE;
+		*iComponents = GL_LUMINANCE8;
+		break;
+	};
 
-	for (unsigned int h=0; h<parts.size (); ++h) {
-		int index = findMaterialIndex(parts[h].name);
-		vector<sFace> &faces = parts[h].faces;
-		
-		if (0 <= index) {
-			sMaterial &material = materials[index];
 
-			if (material.texture) {
-				glEnable(GL_TEXTURE_2D);
-				glBindTexture (GL_TEXTURE_2D, material.texture);
-			}
-			else {
-				glColor3f (material.Kd[0], material.Kd[1], material.Kd[2]);
-			}
-		}
-		else {
-			glColor3f (0.7f, 0.7f, 0.7f);
-		}
+	// Done with File
+	fclose(pFile);
 
-		for (unsigned int i=0, ip=faces.size (); i<ip; ++i) {
-			glBegin (GL_POLYGON);
-			for (int j=0, jn=faces[i].n; j<jn; ++j) {
-				int &v  = faces[i].v[j];
-				int &vt = faces[i].vt[j];
-				int &vn = faces[i].vn[j];
+	// Return pointer to image data
+	return pBits;
+}
 
-				if (0 < vn && vn <= no_size) {
-					sVertex &no = normals[vn - 1];
-					glNormal3f (no.x, no.y, no.z);
-				}
-				if (0 < vt && vt <= tc_size) {
-					sTexCoord &tc = texcoords[vt - 1];
-					glTexCoord2f (tc.u, tc.v);
-				}
-				if (0 < v && v <= vt_size) {
-					sVertex &vt = vertexes[v - 1];
-					glVertex3f (scale*vt.x, scale*vt.y, scale*vt.z);
-				}
-			}
-			glEnd ();
+
+void model::draw()
+{
+	if(loaded)
+	{
+		fnode * fcursor = ffirst;
+		//if( *ffirst->mat->data.texture != NULL)
+		//glBindTexture(GL_TEXTURE_2D, ffirst->mat->data.texture);
+		int nCnt = 0;
+		glBegin(GL_LINE_LOOP);
+		while(fcursor != NULL)
+		{
+			//glBindTexture(GL_TEXTURE_2D, fcursor->mat->data.texture );
+			nCnt++;
+			glColor3f(150.0/255, 75.0/255, 0);
+
+			glTexCoord2f(fcursor->data.u[0], fcursor->data.v[0]);
+			glNormal3f(fcursor->data.a[0], fcursor->data.b[0], fcursor->data.c[0]);
+			glVertex3f(fcursor->data.x[0], fcursor->data.y[0], fcursor->data.z[0]);
+
+			glTexCoord2f(fcursor->data.u[1], fcursor->data.v[1]);
+			glNormal3f(fcursor->data.a[1], fcursor->data.b[1], fcursor->data.c[1]);
+			glVertex3f(fcursor->data.x[1], fcursor->data.y[1], fcursor->data.z[1]);
+
+			glTexCoord2f(fcursor->data.u[2], fcursor->data.v[2]);
+			glNormal3f(fcursor->data.a[2], fcursor->data.b[2], fcursor->data.c[2]);
+			glVertex3f(fcursor->data.x[2], fcursor->data.y[2], fcursor->data.z[2]);
+			fcursor = fcursor->next;
 		}
 		
-		glDisable (GL_TEXTURE_2D);
+		glEnd();
 	}
 }
 
+
+/*
+void model::loadTGAtexture(char* fileName, GLuint* texture)
+{
+	GLint iWidth, iHeight, iComponents;
+	GLenum eFormat;
+	GLbyte *pBytes = NULL;
+
+	glGenTextures(1, texture);
+
+	glBindTexture(GL_TEXTURE_2D, *texture);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	pBytes = gltLoadTGA(fileName, &iWidth, &iHeight, &iComponents, &eFormat);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, iComponents, iWidth, iHeight, eFormat, GL_UNSIGNED_BYTE, pBytes);
+	free(pBytes);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
+
+	//glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+}
+*/
+
+/*
+void model::loadBmpTexture(char* fileName, GLuint* texture )
+{
+	AUX_RGBImageRec* texRec;
+
+	if( ( texRec = LoadBMPFile( fileName ) ) )	{
+			glGenTextures(1, texture);
+			glBindTexture(GL_TEXTURE_2D, *texture);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexImage2D(GL_TEXTURE_2D, 
+					0, 
+					3, 
+					texRec->sizeX, 
+					texRec->sizeY, 
+					0, 
+					GL_RGB, 
+					GL_UNSIGNED_BYTE, 
+					texRec->data);
+	} 
+
+	if(texRec)
+	{
+		if(texRec->data) free(texRec->data);
+		free(texRec);
+	}
+}
+*/
+
+bool model::Load(char * objfile, char * mtlname)
+{
+	char buffer[256];
+	strcpy(filename, objfile);
+	FILE * file = fopen(filename, "r");
+
+	strcpy(mtllib, mtlname);
+
+	if(file == NULL)
+	{
+		MessageBox(NULL, objfile, "Model file not found:", MB_OK);
+		return false;
+	}
+	while(fscanf(file, "%s", buffer) != EOF)
+	{
+		if(!strcmp("#", buffer))skipComment(file);
+		if(!strcmp("mtllib", buffer))loadMaterialLib(file);
+		if(!strcmp("v", buffer))loadVertex(file);
+		if(!strcmp("vt", buffer))loadTexCoord(file);
+		if(!strcmp("vn", buffer))loadNormal(file);
+		if(!strcmp("f", buffer))loadFace(file);
+		if(!strcmp("s", buffer));//fscanf(file, "%s", buffer); 
+		if(!strcmp("usemtl", buffer));//useMaterial(file);
+	}
+	fclose(file);
+	loaded = true;
+	return true;
+}
+
+void model::useMaterial(FILE * file)
+{
+	char buffer[256];
+	mnode * cursor = mfirst;
+	fscanf(file, "%s", buffer);
+	while(strcmp(buffer, cursor->data.name))
+		cursor= cursor->next;
+	mcurrent = cursor;
+}
+
+void model::skipComment(FILE * file)
+{
+	char buffer[256];
+	fgets(buffer, 256, file);
+}
+
+bool model::loadMaterialLib(FILE * file)
+{
+	char * wd = strtok(filename, "/");
+	char buffer[256];
+	fscanf(file, "%s", buffer);
+	sprintf(mtllib, "%s/%s", wd, buffer);
+	strcpy(directory, wd);
+	FILE * lib = fopen(buffer, "r");
+	if(lib == NULL)
+	{
+		MessageBox(NULL, mtllib, "Material library not found:", MB_OK);
+		return false;
+	}
+	else loadMaterials(lib);
+	fclose(lib);
+	return true;
+}
+
+void model::loadMaterials(FILE * file)
+{
+
+	char parameter[32];
+	mnode * temp;
+	while(fscanf(file, "%s", parameter) != EOF)
+	{
+
+		if(!strcmp("newmtl", parameter))
+		{
+			temp = new mnode();
+			fscanf(file, "%s", temp->data.name);
+		}
+		if(!strcmp("illum", parameter))
+			fscanf(file, "%i", &temp->data.illum);
+		if(!strcmp("map_Kd", parameter))
+		{
+			fscanf(file, "%s", temp->data.map_Kd);
+			/*
+			if(strstr(temp->data.map_Kd, ".bmp") != NULL)
+				loadBmpTexture( temp->data.map_Kd, & (temp->data.texture ) );
+			else if( strstr( temp->data.map_Kd, ".tga" ) != NULL )
+				loadTGAtexture( temp->data.map_Kd, & (temp->data.texture ) );
+			*/
+		}
+		if(!strcmp("Ni", parameter))
+			fscanf(file, "%f", &temp->data.Ni);
+		if(!strcmp("Kd", parameter))
+			fscanf(file, "%f %f %f", &temp->data.Kd[0],&temp->data.Kd[1],&temp->data.Kd[2]);
+		if(!strcmp("Ka", parameter))
+			fscanf(file, "%f %f %f", &temp->data.Ka[0],&temp->data.Ka[1],&temp->data.Ka[2]);
+		if(!strcmp("Tf", parameter))
+		{
+			fscanf(file, "%f %f %f", &temp->data.Tf[0],&temp->data.Tf[1],&temp->data.Tf[2]);
+			if(mfirst == NULL)
+			{
+				mfirst = temp;
+				mcurrent = temp;
+				mfirst->next = NULL;
+			}
+			else
+			{
+				mcurrent->next = temp;
+				mcurrent = mcurrent->next;
+				mcurrent->next = NULL;
+			}
+
+		}
+	}
+
+}
+
+bool model::loadVertex(FILE * file)
+{
+	vnode * temp = new vnode();
+	fscanf(file, "%f %f %f", &temp->data.x, &temp->data.y, &temp->data.z);
+	temp->data.index = vindex;
+	if(vfirst == NULL)
+	{
+		vfirst = temp;
+		vcurrent = temp;
+		vfirst->next = NULL;
+	}
+	else
+	{
+		vcurrent->next = temp;
+		vcurrent = vcurrent->next;
+		vcurrent->next = NULL;
+	}
+	vindex++;
+	return true;
+}
+
+bool model::loadTexCoord(FILE * file)
+{
+	tnode * temp = new tnode();
+	fscanf(file, "%f %f", &temp->data.u, &temp->data.v);
+	temp->data.index = tindex;
+	temp->next = NULL;
+	if(tfirst == NULL)
+	{
+		tfirst = temp;
+		tcurrent = temp;
+	}
+	else
+	{
+		tcurrent->next = temp;
+		tcurrent = tcurrent->next;
+	}
+	tindex++;
+	return true;
+}
+
+bool model::loadNormal(FILE * file)
+{
+	vnode * temp = new vnode();
+	fscanf(file, "%f %f %f", &temp->data.x, &temp->data.y, &temp->data.z);
+	temp->data.index = nindex;
+	temp->next = NULL;
+	if(nfirst == NULL)
+	{
+		nfirst = temp;
+		ncurrent = temp;
+	}
+	else
+	{
+		ncurrent->next = temp;
+		ncurrent = ncurrent->next;
+	}
+	nindex++;
+	return true;
+}
+
+bool model::loadFace(FILE * file)
+{
+	fnode * temp = new fnode();
+	temp->mat = mcurrent;
+	vnode * vcursor = vfirst;
+	tnode * tcursor = tfirst;
+	vnode * ncursor = nfirst;
+	unsigned int v_index[3], t_index[3], n_index[3];
+	for(int i = 0; i < 3; i++)
+	{
+		vcursor = vfirst;
+		tcursor = tfirst;
+		ncursor = nfirst;
+		fscanf(file, "%i/%i/%i", &v_index[i], &t_index[i], &n_index[i]);
+
+		for(int v = 1; v != v_index[i]; v++)
+			vcursor = vcursor->next;
+		temp->data.x[i] = vcursor->data.x;
+		temp->data.y[i] = vcursor->data.y;
+		temp->data.z[i] = vcursor->data.z;
+
+		for(int k = 1; k != t_index[i]; k++)
+			tcursor = tcursor->next;
+		temp->data.u[i] = tcursor->data.u;
+		temp->data.v[i] = tcursor->data.v;
+
+//		for(int j = 1; j != n_index[i]; j++)
+//			ncursor = ncursor->next;
+//		temp->data.a[i] = ncursor->data.x;
+//		temp->data.b[i] = ncursor->data.y;
+//		temp->data.c[i] = ncursor->data.z;
+	}
+
+	temp->next = NULL;
+	if(ffirst == NULL)
+	{
+		ffirst = temp;
+		fcurrent = temp;
+		ffirst->next = NULL;
+	}
+	else
+	{
+		fcurrent->next = temp;
+		fcurrent = fcurrent->next;
+		fcurrent->next = NULL;
+	}
+	faces++;
+	return true;
+}
