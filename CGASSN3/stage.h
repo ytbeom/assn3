@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include "lion.h"
 
 
 #include <gl/freeglut.h>
@@ -51,6 +52,8 @@ public:
 	void drawMaple();
 	void drawGinkgo();
 	void drawFlag();
+	void tutorial();
+	void start(Lion my_lion);
 
 };
 

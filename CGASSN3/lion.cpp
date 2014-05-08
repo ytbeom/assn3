@@ -48,23 +48,13 @@ int Lion::IsCollisionLoop(float _x, float _y, float _radius){
 
 void Lion::drawDeath(Lion my_lion, int viewmode){
 	glClear(GL_COLOR_BUFFER_BIT);
-
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
 	void *font = GLUT_BITMAP_TIMES_ROMAN_24;
 	char string[] ="GAME OVER";
 	glColor3f(1.0,1.0,1.0);
-	switch (viewmode) {
-	case 1:
-		break;
-	case 2:
-		break;
-	case 3:
-	case 4:
-		glRasterPos2f(mapsize/2, 0);
-		break;
-	case 5:
-		glRasterPos2f(my_lion.x,50);
-		break;
-	}
+	glRasterPos2f(my_lion.x,50);
 	int len = 9;
 	for(int i=0;i<len;i++)
 		glutBitmapCharacter(font,string[i]);
@@ -72,23 +62,14 @@ void Lion::drawDeath(Lion my_lion, int viewmode){
 
 void Lion::drawClear(Lion my_lion, int viewmode){
 	glClear(GL_COLOR_BUFFER_BIT);
-
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
 	void *font = GLUT_BITMAP_TIMES_ROMAN_24;
 	char string[] ="STAGE CLEAR";
 	glColor3f(1.0,1.0,1.0);
-		switch (viewmode) {
-	case 1:
-		break;
-	case 2:
-		break;
-	case 3:
-	case 4:
-		glRasterPos2f(mapsize/2, 0);
-		break;
-	case 5:
-		glRasterPos2f(my_lion.x+15,50);
-		break;
-	}
+	glRasterPos2f(my_lion.x+15,50);
+
 	int len = 11;
 	for(int i=0;i<len;i++)
 		glutBitmapCharacter(font,string[i]);
@@ -163,7 +144,7 @@ void Lion::drawLion(){
 		glColor3f(1.0,0.9,0.0);
 		glPushMatrix();
 		// Torso의 기준점에서 앞쪽 다리의 상대적인 위치로 변환
-		glTranslatef(-0.23*size,-0.30*size,0);
+		glTranslatef(-0.3*size,-0.25*size,-0.1*size);
 		glRotatef(60,0.0,0.0,1.0);
 		drawUpperLeg();
 		// 위쪽 다리와 아랫쪽 다리의 상대적인 위치 변환
@@ -176,7 +157,7 @@ void Lion::drawLion(){
 		glColor3f(1.0,1.0,0.0);
 		glPushMatrix();
 		// Torso의 기준점에서 앞쪽 다리의 상대적인 위치로 변환
-		glTranslatef(-0.1*size,-0.30*size,0);
+		glTranslatef(-0.3*size,-0.25*size,0.1*size);
 		glRotatef(60,0.0,0.0,1.0);
 		drawUpperLeg();
 		// 위쪽 다리와 아랫쪽 다리의 상대적인 위치 변환
@@ -189,7 +170,7 @@ void Lion::drawLion(){
 		glColor3f(1.0,0.9,0.0);
 		glPushMatrix();
 		// Torso의 기준점에서 앞쪽 다리의 상대적인 위치로 변환
-		glTranslatef(-0.9*size,-0.30*size,0);
+		glTranslatef(-0.9*size,-0.25*size,-0.1*size);
 		glRotatef(-45,0.0,0.0,1.0);
 		drawUpperLeg();
 		// 위쪽 다리와 아랫쪽 다리의 상대적인 위치 변환
@@ -202,7 +183,7 @@ void Lion::drawLion(){
 		glColor3f(1.0,1.0,0.0);
 		glPushMatrix();
 		// Torso의 기준점에서 앞쪽 다리의 상대적인 위치로 변환
-		glTranslatef(-0.77*size,-0.30*size,0);
+		glTranslatef(-0.9*size,-0.25*size,0.1*size);
 		glRotatef(-45,0.0,0.0,1.0);
 		drawUpperLeg();
 		// 위쪽 다리와 아랫쪽 다리의 상대적인 위치 변환
@@ -279,14 +260,14 @@ void Lion::drawHead() {
 	
 	glPushMatrix();
 	glColor3f(0,0,0);
-	glTranslatef(-0.4,0.01,0.84);
-	glutSolidSphere(0.05,10,10);
+	glTranslatef(-0.4,0.01,0.88);
+	glutSolidSphere(0.07,10,10);
 	glPopMatrix();
 
 	glPushMatrix();
 	glColor3f(0,0,0);
-	glTranslatef(0.4,0.01,0.84);
-	glutSolidSphere(0.05,10,10);
+	glTranslatef(0.4,0.01,0.88);
+	glutSolidSphere(0.07,10,10);
 	glPopMatrix();
 
 	glPushMatrix();

@@ -42,8 +42,12 @@ void Background::draw(int BackgroundChange){
 			glColor3f(0.4,0.2,0);
 		else if(season==4)
 			glColor3f(1.0,1.0,1.0);
-		glRectf(-mapsize,0,mapsize+200,bottom-10);
-
+		//glRectf(-mapsize,0,mapsize+200,bottom-10);
+		glPushMatrix();
+		glScalef(1,bottom/mapsize,50/mapsize);
+		glTranslatef(mapsize/2,0,-25);
+		glutSolidCube(mapsize);
+		glPopMatrix();
 		if(season==1||season==3){
 			int i;
 			int k=0;
@@ -176,6 +180,7 @@ void Background::info(float lion_x, int viewmode){
 	case 2:
 		break;
 	case 3:
+		
 		glBegin(GL_POLYGON);
 		glVertex3f(0.9*mapsize,0,-0.2*mapsize+50);
 		if(lion_x<0)
@@ -276,3 +281,100 @@ void Background::drawFlag(){
 	glEnd();
 	glLineWidth(1);
 }
+
+void Background::tutorial(){
+	glClear(GL_COLOR_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, 200, 0, 100, -50, 50);
+	
+	char string[] ="GAME TUTORIAL";
+	char string2[] = "mode selection";
+	char string3[] = "1: 1st person view";
+	char string4[] = "2: 3rd person view";
+	char string5[] = "3: top view       ";
+	char string6[] = "4: side view      ";
+	char string7[] = "5: zoom view      ";
+	char string8[] = "move";
+	char string9[] = "¡ç¡æ :go forward, backward";
+	char string10[] = "¡è :jump";
+	char string11[] = "Press Enter to start...";
+	glColor3f(1.0,1.0,1.0);
+
+	void *font = GLUT_BITMAP_TIMES_ROMAN_24;
+	glRasterPos2f(80,80);
+	int len = 13;
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string[i]);
+
+	glRasterPos2f(20,60);
+	len = 14;
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string2[i]);
+
+	glRasterPos2f(15,50);
+	len = 18;
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string3[i]);
+	glRasterPos2f(15,45);
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string4[i]);
+	glRasterPos2f(15,40);
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string5[i]);
+	glRasterPos2f(15,35);
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string6[i]);
+	glRasterPos2f(15,30);
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string7[i]);
+
+
+	glRasterPos2f(120,60);
+	len = 4;
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string8[i]);
+	glRasterPos2f(120,50);
+	len = 24;
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string9[i]);
+	glRasterPos2f(120,45);
+	len = 7;
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string10[i]);
+
+	glRasterPos2f(150,10);
+	len = 23;
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string11[i]);
+
+
+	glFlush();
+	glutSwapBuffers();
+
+}
+
+void Background::start(Lion my_lion){
+	glClear(GL_COLOR_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, 200, 0, 100, -50, 50);
+
+	glPushMatrix();
+	glTranslatef(100,50,0);
+	glScalef(10,10,10);
+	my_lion.drawHead();
+	glPopMatrix();
+
+	void *font = GLUT_BITMAP_TIMES_ROMAN_24;
+	char string11[] = "Press Enter to start...";
+	glColor3f(1.0,1.0,1.0);
+	glRasterPos2f(150,10);
+	int len = 23;
+	for(int i=0;i<len;i++)
+		glutBitmapCharacter(font,string11[i]);
+
+
+	glFlush();
+	glutSwapBuffers();
+};

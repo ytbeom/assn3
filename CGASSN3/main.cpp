@@ -13,6 +13,7 @@ int xposition = 0.0;
 int BackgroundChange = 0;
 int translateLoop;
 int stage=1;
+int start=0;
 int startfresh;
 int viewmode = 5; // 1: 1st person view, 2: 3rd person view, 3: top view, 4: side view 5: assignment 1,2 view
 Lion my_lion;
@@ -48,15 +49,17 @@ void init(void)
 }
 
 int collision(){
-/*	for(int i = 0; i < my_pot.NumofPot; i++){
-		if(my_lion.IsCollisionPot(my_pot.PotList[i]/2, (my_pot.BottomofPot + my_pot.TopofFire)/2, my_pot.RadiusofFire/2))
+	
+	for(int i = 0; i < my_rock.NumofRock; i++){
+		if(my_lion.IsCollisionPot(my_rock.RockList[i], 15.0+2.4971*6.0, 3.18344*3))
 			return true;
 	}
 	
 	for(int i = 0; i < my_loop.NumofLoop; i++){
 		if(my_lion.IsCollisionLoop(my_loop.LoopList[i]+translateLoop, my_loop.top - my_loop.RadiusofLoop, my_loop.RadiusofLoop))
 			return true;
-	}*/
+	}
+	
 	return false;
 }
 
@@ -92,7 +95,11 @@ void display(void)
 		BackgroundChange++;
 	else
 		BackgroundChange=0;
-
+	if (start==0)
+		my_bg.start(my_lion);
+	else if(start==1)
+		my_bg.tutorial();
+	else{
 	if (!collision() && my_lion.x > mapsize && my_bg.season<4) {
 		my_lion.drawClear(my_lion, viewmode);
 		glFlush();
@@ -183,36 +190,11 @@ void display(void)
 		my_loop.display_3d_fireloop(my_lion.x, translateLoop);
 		glPopMatrix();
 
-		/*
-		//translate Loop
-		glPushMatrix();
-		glTranslatef(translateLoop,0,0);
-		my_loop.display_fireloop_front(BackgroundChange, my_lion.x, translateLoop);
-		glPopMatrix();
-		*/
-
 		//draw lion
-		//my_lion.drawLeg();
 		glPushMatrix();
 		glTranslatef(my_lion.x,my_lion.y,0);
 		my_lion.drawLion();
 		glPopMatrix();
-
-		/*
-		//translate Loop
-		glPushMatrix();
-		glTranslatef(translateLoop,0,0);
-		my_loop.display_fireloop_back(BackgroundChange, my_lion.x, translateLoop);
-		glPopMatrix();
-		*/
-
-		/*
-		//draw firepot
-		glPushMatrix();
-		glScalef(0.5f,0.5f,1.0f);
-		my_pot.display_firepot(BackgroundChange);
-		glPopMatrix();
-		*/
 
 		// draw rock
 		glPushMatrix();
@@ -229,6 +211,7 @@ void display(void)
 		glutSwapBuffers();
 		Sleep(2000);
 		exit(1);
+	}
 	}
 }
 
@@ -270,7 +253,7 @@ void Jump(int jump_direction){
 		gluLookAt(my_lion.x-100,60,0,my_lion.x+500,50,0,0,1,0);
 		break;
 	case 3:
-		glRotatef(90,1,0,0);
+		glRotatef(90,-1,0,0);
 		glOrtho(-50, 50+mapsize, 0, 100, -mapsize/4, -mapsize/4+50+mapsize/2);
 		break;
 	case 4:
@@ -301,8 +284,6 @@ void Jump(int jump_direction){
 
 void specialkeyboard(int key, int x, int y)
 {
-	//glMatrixMode(GL_PROJECTION);
-	//glLoadIdentity();
 	switch (key) {
 	case GLUT_KEY_UP:
 		if(my_lion.y==bottom&&startfresh==1) {
@@ -318,10 +299,7 @@ void specialkeyboard(int key, int x, int y)
 		}
 		break;
 	}
-	//gluOrtho2D(-50+my_lion.x, 150+my_lion.x, 0, 100);
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();	
-	//glutPostRedisplay();
+
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -335,7 +313,6 @@ void keyboard(unsigned char key, int x, int y) {
 		break;
 	case '2':
 		viewmode = 2;
-		//gluPerspective(60,0.5,my_lion.x-100,my_lion.x+500);
 		gluPerspective(60,2,10,1000);
 		gluLookAt(my_lion.x-100,60,0,my_lion.x+500,50,0,0,1,0);
 		break;
@@ -352,6 +329,9 @@ void keyboard(unsigned char key, int x, int y) {
 		viewmode = 5;
 		glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
 		break;
+	case 13:
+		start++;
+		break;
 	}
 	glutPostRedisplay();
 }
@@ -364,8 +344,6 @@ void reshape(int w, int h)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-50+my_lion.x, 150+my_lion.x, 0, 100, -50, 50);
-//	glMatrixMode(GL_MODELVIEW);
-//	glLoadIdentity();
 }
 
 void moveObjects(int) {
@@ -374,8 +352,6 @@ void moveObjects(int) {
 	else
 		translateLoop-=(float)stage/2+(float)(stage%2)/2;
 	glutPostRedisplay();
-	
-//	glutSpecialFunc(specialkeyboard);
 	glutTimerFunc(2000/60,moveObjects,1);
 }
 
