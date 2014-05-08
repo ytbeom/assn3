@@ -86,7 +86,7 @@ void Lion::drawLion(){
 		glColor3f(1.0,0.9,0.0);
 		glPushMatrix();
 		// Torso의 기준점에서 앞쪽 다리의 상대적인 위치로 변환
-		glTranslatef(-0.23*size,-0.30*size,0);
+		glTranslatef(-0.3*size,-0.25*size,-0.1*size);
 		glRotatef(thigh_angle_list[state],0.0,0.0,1.0);
 		drawUpperLeg();
 		// 위쪽 다리와 아랫쪽 다리의 상대적인 위치 변환
@@ -99,7 +99,7 @@ void Lion::drawLion(){
 		glColor3f(1.0,1.0,0.0);
 		glPushMatrix();
 		// Torso의 기준점에서 앞쪽 다리의 상대적인 위치로 변환
-		glTranslatef(-0.1*size,-0.30*size,0);
+		glTranslatef(-0.3*size,-0.25*size,0.1*size);
 		glRotatef(thigh_angle_list[state],0.0,0.0,1.0);
 		drawUpperLeg();
 		// 위쪽 다리와 아랫쪽 다리의 상대적인 위치 변환
@@ -112,7 +112,7 @@ void Lion::drawLion(){
 		glColor3f(1.0,0.9,0.0);
 		glPushMatrix();
 		// Torso의 기준점에서 앞쪽 다리의 상대적인 위치로 변환
-		glTranslatef(-0.9*size,-0.30*size,0);
+		glTranslatef(-0.9*size,-0.25*size,-0.1*size);
 		glRotatef(thigh_angle_list[(state+4)%8],0.0,0.0,1.0);
 		drawUpperLeg();
 		// 위쪽 다리와 아랫쪽 다리의 상대적인 위치 변환
@@ -125,7 +125,7 @@ void Lion::drawLion(){
 		glColor3f(1.0,1.0,0.0);
 		glPushMatrix();
 		// Torso의 기준점에서 앞쪽 다리의 상대적인 위치로 변환
-		glTranslatef(-0.77*size,-0.30*size,0);
+		glTranslatef(-0.9*size,-0.25*size,0.1*size);
 		glRotatef(thigh_angle_list[(state+4)%8],0.0,0.0,1.0);
 		drawUpperLeg();
 		// 위쪽 다리와 아랫쪽 다리의 상대적인 위치 변환
@@ -255,13 +255,13 @@ void Lion::drawHead() {
 	
 	glPushMatrix();
 	glColor3f(0,0,0);
-	glTranslatef(-0.4,0.01,0.8399);
+	glTranslatef(-0.4,0.01,0.84);
 	glutSolidSphere(0.05,10,10);
 	glPopMatrix();
 
 	glPushMatrix();
 	glColor3f(0,0,0);
-	glTranslatef(0.4,0.01,0.8399);
+	glTranslatef(0.4,0.01,0.84);
 	glutSolidSphere(0.05,10,10);
 	glPopMatrix();
 
@@ -343,8 +343,8 @@ void Lion::drawUpperLeg() {
 	glPushMatrix();
 	glRotatef(90,1,0,0);
 	glScalef(5,5,5);
-	glutWireCylinder(0.2,0.5,10,10);
-	glutWireSphere(0.2,20,20);
+	glutSolidCylinder(0.2,0.5,10,10);
+	glutSolidSphere(0.2,20,20);
 	glPopMatrix();
 }
 
@@ -352,7 +352,7 @@ void Lion::drawLowerLeg() {
 	glPushMatrix();
 	glRotatef(90,1,0,0);
 	glScalef(5,5,5);
-	glutWireCylinder(0.2,0.5,10,10);
-	glutWireSphere(0.2,20,20);
+	glutSolidCylinder(0.2,0.5,10,10);
+	glutSolidSphere(0.2,20,20);
 	glPopMatrix();
 }
